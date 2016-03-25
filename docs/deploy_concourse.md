@@ -48,8 +48,8 @@ $ bosh upload stemcell https://storage.googleapis.com/bosh-stemcells/light-bosh-
 * Upload the required [BOSH Releases](http://bosh.io/docs/release.html):
 
 ```
-$ bosh upload release https://bosh.io/d/github.com/cloudfoundry-incubator/garden-linux-release?v=0.333.0
-$ bosh upload release https://bosh.io/d/github.com/concourse/concourse?v=0.74.0
+$ bosh upload release https://bosh.io/d/github.com/cloudfoundry-incubator/garden-linux-release?v=0.335.0
+$ bosh upload release https://bosh.io/d/github.com/concourse/concourse?v=0.76.0
 ```
 
 * Download the [concourse.yml](https://raw.githubusercontent.com/frodenas/bosh-google-cpi-boshrelease/master/docs/concourse.yml) deployment manifest file and update it with your properties (at the top of the file):
