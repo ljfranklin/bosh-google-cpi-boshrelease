@@ -13,35 +13,73 @@ I am assuming you are familiar with [BOSH](http://bosh.io/) and its terminology.
 ### Setup the [Google Cloud Platform](https://cloud.google.com/) environment
 
 * [Sign up](https://cloud.google.com/compute/docs/signup) and activate Google Compute Engine, if you haven't already.
-* Create a [service account](https://developers.google.com/identity/protocols/OAuth2ServiceAccount) and secure store the downloaded **JSON Key**.
+
 * [Download and Install](https://cloud.google.com/sdk/) the Google Cloud SDK command line tool.
+
+* [Initialize](https://cloud.google.com/sdk/gcloud/reference/init) the gcloud CLI if you haven't done so previously. Choose one of the following:
+
+  * Use the CLI-guided walkthrough:
+
+    ```
+    $ gcloud init
+    ```
+
+  * Manually initialize the CLI:
+
+    1. Create a [service account](https://developers.google.com/identity/protocols/OAuth2ServiceAccount) and securely store the downloaded **JSON Service Key**.
+
+    1. Set the credentials:
+
+      ```
+      # Set ENV:
+      export GOOGLE_APPLICATION_CREDENTIALS=<path/to/SERVICE_KEY.json>
+
+      # Or, use the CLI:
+      $ gcloud auth activate-service-account --key-file <path/to/SERVICE_KEY.json>
+      ```
+
+    1. Set the project configuration (see [Regions and Zones](https://cloud.google.com/compute/docs/zones)):
+
+      ```
+      $ gcloud config set project <PROJECT_ID>
+      $ gcloud config set compute/region <REGION> # e.g., us-east1
+      $ gcloud config set compute/zone <ZONE>     # e.g., us-east1-b
+      ```
+
 * Reserve a new [static external IP address](https://cloud.google.com/compute/docs/instances-and-network#reserve_new_static):
 
-```
-$ gcloud compute addresses create bosh
-```
+  ```
+  $ gcloud compute addresses create bosh
+  ```
 
 * Create a new [network with auto-created subnetwork ranges](https://cloud.google.com/compute/docs/networking#creating_a_new_network_with_auto-created_subnetwork_ranges):
 
-```
-$ gcloud compute networks create cf --mode auto
-```
+  ```
+  $ gcloud compute networks create cf --mode auto
+  ```
 
 * Create the following firewalls and [set the appropriate rules](https://cloud.google.com/compute/docs/networking#addingafirewall):
 
-```
-$ gcloud compute firewall-rules create cf-intenal --description "Cloud Foundry Internal traffic" --network cf --source-tags cf-internal --target-tags cf-internal --allow tcp,udp,icmp
-```
+  ```
+  $ gcloud compute firewall-rules create cf-internal \
+      --description "Cloud Foundry Internal traffic" \
+      --network cf \
+      --source-tags cf-internal \
+      --target-tags cf-internal \
+      --allow tcp,udp,icmp
 
-```
-$ gcloud compute firewall-rules create cf-bosh --description "Cloud Foundry BOSH External traffic" --network cf --target-tags cf-bosh --allow tcp:22,tcp:443,tcp:4222,tcp:6868,tcp:25250,tcp:25555,tcp:25777,udp:53
-```
+  $ gcloud compute firewall-rules create cf-bosh \
+      --description "Cloud Foundry BOSH External traffic" \
+      --network cf \
+      --target-tags cf-bosh \
+      --allow tcp:22,tcp:443,tcp:4222,tcp:6868,tcp:25250,tcp:25555,tcp:25777,udp:53
+  ```
 
 * Create a **password-less** [SSH key](https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys) if you haven't already.
 
 ### Install the bosh-init CLI
 
-Install the [bosh-init](https://bosh.io/docs/install-bosh-init.html) tool in your workstation.
+Install the [bosh-init](https://bosh.io/docs/install-bosh-init.html) tool.
 
 ### Create a deployment directory
 
@@ -73,7 +111,7 @@ resource_pools:
     network: private
     stemcell:
       url: https://storage.googleapis.com/bosh-stemcells/light-bosh-stemcell-3202-google-kvm-ubuntu-trusty-go_agent.tgz
-      sha1: e44e304b3895acf61e3bd0d7eb6929bd3c8bc770
+      sha1: b59b6f51cd34b25a55a189d2b800ebb7608f9cc6
     cloud_properties:
       machine_type: n1-standard-4
       root_disk_size_gb: 40
@@ -94,7 +132,7 @@ networks:
     cloud_properties:
       network_name: cf
       tags:
-        - cf-intenal
+        - cf-internal
         - cf-bosh
   - name: public
     type: vip
@@ -244,8 +282,6 @@ cloud_provider:
 ```
 
 ### Deploy
-
-Initialize the [gcloud](https://cloud.google.com/sdk/gcloud/reference/init) environment if you haven't done so previously. Alternativelly, you can set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable pointing to the JSON file that defines your credentials.
 
 Using the previously created deployment manifest, now we can deploy it:
 
